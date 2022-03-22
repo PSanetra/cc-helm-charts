@@ -1,6 +1,7 @@
 replicas: 2
 
 command:
+  - "/opt/keycloak/bin/kc.sh"
   - "start-dev"
 
 podLabels:

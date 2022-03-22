@@ -1,4 +1,5 @@
 command:
+  - "/opt/keycloak/bin/kc.sh"
   - "start-dev"
 
 extraEnv: |
