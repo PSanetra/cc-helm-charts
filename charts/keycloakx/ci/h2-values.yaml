@@ -1,3 +1,6 @@
+command:
+  - "start-dev"
+
 extraEnv: |
   - name: KC_DB
     value: dev-file

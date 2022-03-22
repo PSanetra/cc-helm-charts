@@ -1,5 +1,8 @@
 replicas: 2
 
+command:
+  - "start-dev"
+
 podLabels:
   test-label: test-label-value
 
