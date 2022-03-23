@@ -30,6 +30,10 @@ lifecycleHooks: |
         - echo 'Hello from lifecycle hook!'
 
 extraEnv: |
+  - name: KEYCLOAK_ADMIN
+    value: "admin"
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    value: "admin"
   - name: KC_DB
     value: postgres
   - name: KC_DB_USERNAME_FILE
