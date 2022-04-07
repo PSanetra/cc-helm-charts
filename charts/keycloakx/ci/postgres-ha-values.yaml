@@ -2,6 +2,7 @@ replicas: 2
 
 command:
   - "/opt/keycloak/bin/kc.sh"
+  - "--verbose"
   - "start-dev"
 
 podLabels:
@@ -33,7 +34,7 @@ extraEnv: |
   - name: KEYCLOAK_ADMIN
     value: "admin"
   - name: KEYCLOAK_ADMIN_PASSWORD
-    value: "admin"
+    value: "secret"
   - name: KC_DB
     value: postgres
   - name: KC_DB_USERNAME_FILE

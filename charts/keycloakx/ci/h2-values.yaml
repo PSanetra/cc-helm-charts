@@ -1,12 +1,13 @@
 command:
   - "/opt/keycloak/bin/kc.sh"
+  - "--verbose"
   - "start-dev"
 
 extraEnv: |
   - name: KEYCLOAK_ADMIN
     value: "admin"
   - name: KEYCLOAK_ADMIN_PASSWORD
-    value: "admin"
+    value: "secret"
   - name: KC_DB
     value: dev-file
   - name: KC_METRICS_ENABLED
