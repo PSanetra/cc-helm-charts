@@ -164,9 +164,12 @@
       "nodeSelector": {
         "type": "object"
       },
-      "pgchecker": {
+      "dbchecker": {
         "type": "object",
         "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
           "image": {
             "$ref": "#/definitions/image"
           },
@@ -217,8 +220,28 @@
       "podSecurityContext": {
         "type": "object"
       },
-      "postgresql": {
-        "type": "object"
+      "database": {
+        "type": "object",
+        "properties": {
+          "vendor": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "database": {
+            "type": "string"
+          }
+        }
       },
       "priorityClassName": {
         "type": "string"

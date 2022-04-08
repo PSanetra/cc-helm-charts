@@ -16,11 +16,6 @@ This chart bootstraps a [Keycloak](http://www.keycloak.org/) StatefulSet on a [K
 It provisions a fully featured Keycloak installation.
 For more information on Keycloak and its capabilities, see its [documentation](http://www.keycloak.org/documentation.html).
 
-## Prerequisites Details
-
-The chart has an optional dependency on the [PostgreSQL](https://github.com/bitnami/charts/tree/master/bitnami/postgresql) chart.
-By default, the PostgreSQL chart requires PV support on underlying infrastructure (may be disabled).
-
 ## Installing the Chart
 
 To install the chart with the release name `keycloakx`:
@@ -135,15 +130,16 @@ The following table lists the configurable parameters of the Keycloak-X chart an
 | `route.tls.enabled` | If `true`, TLS is enabled for the Route | `true` |
 | `route.tls.insecureEdgeTerminationPolicy` | Insecure edge termination policy of the Route. Can be `None`, `Redirect`, or `Allow` | `Redirect` |
 | `route.tls.termination` | TLS termination of the route. Can be `edge`, `passthrough`, or `reencrypt` | `edge` |
-| `pgchecker.image.repository` | Docker image used to check Postgresql readiness at startup | `docker.io/busybox` |
-| `pgchecker.image.tag` | Image tag for the pgchecker image | `1.32` |
-| `pgchecker.image.pullPolicy` | Image pull policy for the pgchecker image | `IfNotPresent` |
-| `pgchecker.securityContext` | SecurityContext for the pgchecker container | `{"allowPrivilegeEscalation":false,"runAsGroup":1000,"runAsNonRoot":true,"runAsUser":1000}` |
-| `pgchecker.resources` | Resource requests and limits for the pgchecker container | `{"limits":{"cpu":"10m","memory":"16Mi"},"requests":{"cpu":"10m","memory":"16Mi"}}` |
-| `postgresql.enabled` | If `true`, the Postgresql dependency is enabled | `true` |
-| `postgresql.postgresqlUsername` | PostgreSQL User to create | `keycloak` |
-| `postgresql.postgresqlPassword` | PostgreSQL Password for the new user | `keycloak` |
-| `postgresql.postgresqlDatabase` | PostgreSQL Database to create | `keycloak` |
+| `dbchecker.image.repository` | Docker image used to check database readiness at startup | `docker.io/busybox` |
+| `dbchecker.image.tag` | Image tag for the dbchecker image | `1.32` |
+| `dbchecker.image.pullPolicy` | Image pull policy for the dbchecker image | `IfNotPresent` |
+| `dbchecker.securityContext` | SecurityContext for the dbchecker container | `{"allowPrivilegeEscalation":false,"runAsGroup":1000,"runAsNonRoot":true,"runAsUser":1000}` |
+| `dbchecker.resources` | Resource requests and limits for the dbchecker container | `{"limits":{"cpu":"10m","memory":"16Mi"},"requests":{"cpu":"10m","memory":"16Mi"}}` |
+| `database.hostname` | Database Hostname | unset |
+| `database.port` | Database Port | unset |
+| `database.username` | Database User | unset |
+| `database.password` | Database Password | unset |
+| `database.database` | Database | unset |
 | `serviceMonitor.enabled` | If `true`, a ServiceMonitor resource for the prometheus-operator is created | `false` |
 | `serviceMonitor.namespace` | Optionally sets a target namespace in which to deploy the ServiceMonitor resource | `""` |
 | `serviceMonitor.namespaceSelector` | Optionally sets a namespace selector for the ServiceMonitor | `{}` |
@@ -242,11 +238,6 @@ extraEnv: |
 
 Alternatively one can append custom JVM options by setting the `JAVA_OPTS_APPEND` environment variable.
 
-### Database Setup
-
-By default, Bitnami's [PostgreSQL](https://github.com/bitnami/charts/tree/master/bitnami/postgresql) chart is deployed and used as database.
-Please refer to this chart for additional PostgreSQL configuration options.
-
 #### Using an External Database
 
 The Keycloak Docker image supports various database types.
@@ -257,29 +248,16 @@ Configuration happens in a generic manner.
 The following examples uses a PostgreSQL database with a secret that is managed by the Helm chart.
 
 ```yaml
-postgresql:
-  # Disable PostgreSQL dependency
-  enabled: false
+dbchecker:
+  enabled: true
 
-extraEnv: |
-  - name: KC_DB
-    value: postgres
-  - name: KC_DB_URL_HOST
-    value: mypostgres
-  - name: KC_DB_URL_PORT
-    value: "5432"
-  - name: KC_DB_DATABASE
-    value: mydb
-
-extraEnvFrom: |
-  - secretRef:
-      name: '{{ include "keycloak.fullname" . }}-db'
-
-secrets:
-  db:
-    stringData:
-      KC_DB_USERNAME: '{{ .Values.dbUser }}'
-      KC_DB_PASSWORD: '{{ .Values.dbPassword }}'
+database:
+  vendor: postgres
+  hostname: mypostgres
+  port: 5432
+  username: '{{ .Values.dbUser }}'
+  password: '{{ .Values.dbPassword }}'
+  database: mydb
 ```
 
 `dbUser` and `dbPassword` are custom values you'd then specify on the commandline using `--set-string`.
@@ -290,19 +268,16 @@ The following examples uses a PostgreSQL database with a secret.
 Username and password are mounted as files.
 
 ```yaml
-postgresql:
-  # Disable PostgreSQL dependency
-  enabled: false
+dbchecker:
+  enabled: true
+
+database:
+  vendor: postgres
+  hostname: mypostgres
+  port: 5432
+  database: mydb
 
 extraEnv: |
-  - name: KC_DB
-    value: postgres
-  - name: KC_DB_URL_HOST
-    value: mypostgres
-  - name: KC_DB_URL_PORT
-    value: "5432"
-  - name: KC_DB_DATABASE
-    value: mydb
   - name: KC_DB_USERNAME_FILE
     value: /secrets/db-creds/user
   - name: KC_DB_PASSWORD_FILE
@@ -421,9 +396,13 @@ Create the secret for the credentials as documented [here](https://cloud.google.
 Because `extraContainers` is a string that is passed through the `tpl` function, it is possible to create custom values and use them in the string.
 
 ```yaml
-postgresql:
-  # Disable PostgreSQL dependency
-  enabled: false
+database:
+  vendor: postgres
+  hostname: '127.0.0.1'
+  port: 5432
+  database: postgres
+  username: myuser
+  password: mypassword
 
 # Custom values for Google Cloud SQL
 cloudsql:
@@ -448,20 +427,6 @@ extraVolumes: |
   - name: cloudsql-creds
     secret:
       secretName: cloudsql-instance-credentials
-
-extraEnv: |
-  - name: KC_DB
-    value: postgres
-  - name: KC_DB_URL_HOST
-    value: "127.0.0.1"
-  - name: KC_DB_URL_PORT
-    value: "5432"
-  - name: KC_DB_DATABASE
-    value: postgres
-  - name: KC_DB_USERNAME
-    value: myuser
-  - name: KC_DB_PASSWORD
-    value: mypassword
 ```
 
 ### Changing the Context Path

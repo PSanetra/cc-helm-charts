@@ -74,7 +74,7 @@ extraInitContainers: ""
 # When using service meshes which rely on a sidecar, it may be necessary to skip init containers altogether,
 # since the sidecar doesn't start until the init containers are done, and the sidecar may be required
 # for network access.
-# For example, Istio in strict mTLS mode prevents the pgchecker init container from ever completing
+# For example, Istio in strict mTLS mode prevents the dbchecker init container from ever completing
 skipInitContainers: false
 
 # Additional sidecar containers, e. g. for a database proxy, such as Google's cloudsql-proxy
@@ -331,21 +331,22 @@ route:
     # TLS termination of the route. Can be `edge`, `passthrough`, or `reencrypt`
     termination: edge
 
-pgchecker:
+dbchecker:
+  enabled: false
   image:
-    # Docker image used to check Postgresql readiness at startup
+    # Docker image used to check Database readiness at startup
     repository: docker.io/busybox
-    # Image tag for the pgchecker image
+    # Image tag for the dbchecker image
     tag: 1.32
-    # Image pull policy for the pgchecker image
+    # Image pull policy for the dbchecker image
     pullPolicy: IfNotPresent
-  # SecurityContext for the pgchecker container
+  # SecurityContext for the dbchecker container
   securityContext:
     allowPrivilegeEscalation: false
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
-  # Resource requests and limits for the pgchecker container
+  # Resource requests and limits for the dbchecker container
   resources:
     requests:
       cpu: "20m"
@@ -354,18 +355,13 @@ pgchecker:
       cpu: "20m"
       memory: "32Mi"
 
-postgresql:
-  # If `true`, the Postgresql dependency is enabled
-  enabled: true
-  # PostgreSQL User to create
-  postgresqlUsername: keycloak
-  # PostgreSQL Password for the new user
-  # postgresqlPassword: keycloak
-  # PostgreSQL Database to create
-  postgresqlDatabase: keycloak
-  # PostgreSQL network policy configuration
-  networkPolicy:
-    enabled: false
+database:
+  # E.g. dev-file, dev-mem, mariadb, mssql, mysql, oracle or postgres
+  vendor:
+  hostname:
+  port:
+  username:
+  password:
 
 serviceMonitor:
   # If `true`, a ServiceMonitor resource for the prometheus-operator is created
