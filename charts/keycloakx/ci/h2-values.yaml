@@ -4,6 +4,16 @@ command:
   - "start-dev"
 
 extraEnv: |
+  - name: KEYCLOAK_ADMIN
+    valueFrom:
+      secretKeyRef:
+        name: {{ include "keycloak.fullname" . }}-admin-creds
+        key: user
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: {{ include "keycloak.fullname" . }}-admin-creds
+        key: password
   - name: KC_METRICS_ENABLED
     value: "true"
   - name: KC_HTTP_RELATIVE_PATH
@@ -17,16 +27,14 @@ extraEnv: |
 
 database:
   vendor: dev-file
-  username: admin
-  password: secret
 
 secrets:
   admin-creds:
     annotations:
       my-test-annotation: Test secret for {{ include "keycloak.fullname" . }}
     stringData:
-      user: keycloakadmin
-      password: keycloaksecret
+      user: admin
+      password: secret
 
 test:
   enabled: true
